@@ -38,9 +38,9 @@ def select_game():
     while game_selecting:
         screen.fill(BLACK)
         draw_text("Select Game:", 300, 150)
-        draw_text("1. Game1:", 300, 200)
-        draw_text("2. Game2:", 300, 250)
-        draw_text("3. Back to Menu:", 300, 300)
+        draw_text("1. Game1", 300, 200)
+        draw_text("2. Game2", 300, 250)
+        draw_text("3. Back to Menu", 300, 300)
         pygame.display.flip()
 
         for event in pygame.event.get():
