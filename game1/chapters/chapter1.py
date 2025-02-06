@@ -10,4 +10,4 @@ save_progress("chapter2.py") # Save progress before moving on
 
 # Load the next chapter
 import subprocess
-subprocess.run(["python", "game1/chapters/chapter2_neutral.py"])
+subprocess.run(["python", "game1/chapters/chapter2.py"])
