@@ -3,6 +3,6 @@
         800,
         600
     ],
-    "fullscreen": "borderless",
-    "volume": 0.2
+    "fullscreen": false,
+    "volume": 100
 }

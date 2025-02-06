@@ -1,35 +1,57 @@
 import pygame
-import subprocess
 import sys
-from settings import settings_menu, apply_settings
+import importlib
+import json
+from settings import settings_menu
 from credits import show_credits
 from utils import draw_text
+from game2.chapters import chapter1
+
+SAVE_FILE = "game2/save.json" # Adjust if necessary
 
 # Initialize Pygame
 pygame.init()
 
-# Apply settings and create the screen
-screen, settings = apply_settings()
-pygame.display.set_caption("Game 2")
+# Load settings
+settings = {"resolution": (800, 600), "fullscreen": False} # Replace with actual settings loading
+WIDTH, HEIGHT = settings["resolution"]
+FLAGS = pygame.FULLSCREEN if settings.get("fullscreen", False) else 0
+screen = pygame.display.set_mode((WIDTH, HEIGHT), FLAGS)
+pygame.display.set_caption("Game2")
 
 # Font setup
 font = pygame.font.Font(None, 40)
 
-# Starts the game from Chapter 1
+# Load saved progress from save.json
+def load_saved_progress():
+    try:
+        with open(SAVE_FILE, "r") as file:
+            save_data = json.load(file)
+            return save_data.get("current_chapter", "chapter1") # Default to Chapter 1 if no save exists
+    except (FileNotFoundError, json.JSONDecodeError):
+        return "chapter1" # Default if no save file is found
+
+# Starts Chapter 1 inside the same window
 def start_game():
-    subprocess.run(["python", "game2/chapters/chapter1.py"])
-    sys.exit()
+    next_chapter = chapter1.run_chapter(screen) # Runs Chapter 1
+    load_chapter(next_chapter)
 
-# Loads a saved game
-def load_game():
-    subprocess.run(["python", "game2/save.py"])
-    sys.exit()
+# Dynamically load and run the next chapter
+def load_chapter(chapter_name):
+    chapter_module = importlib.import_module(f"game2.chapters.{chapter_name}")
+    chapter_module.run_chapter(screen)
 
-# Game1 menu loop
+# Save progress to save.json
+def save_progress(chapter_name):
+    save_data = {"current_chapter": chapter_name}
+    with open(SAVE_FILE, "w") as file:
+        json.dump(save_data, file, indent=4)
+
+# Game2 menu loop
 running = True
 while running:
     screen.fill((0, 0, 0))
-    draw_text(screen, font, "Game2 Menu", 0.375, 0.20)
+    draw_text(screen, font, "Game2", 0.375, 0.20)
     draw_text(screen, font, "1. Continue", 0.375, 0.30)
     draw_text(screen, font, "2. New Game", 0.375, 0.40)
     draw_text(screen, font, "3. Settings", 0.375, 0.50)
@@ -42,9 +64,11 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
-                load_game() # Continue game from save
+                # Load saved progress from save.json and continue
+                saved_chapter = load_saved_progress()
+                load_chapter(saved_chapter)
             elif event.key == pygame.K_2:
-                start_game() # Start from Chapter 1
+                start_game() # Starts a new game (Chapter 1
             elif event.key == pygame.K_3:
                 settings_menu(screen) # Calls settings menu
             elif event.key == pygame.K_4:

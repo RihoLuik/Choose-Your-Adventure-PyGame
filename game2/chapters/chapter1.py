@@ -1,55 +1,56 @@
 import pygame
-import subprocess
 import time
+import json
+import os
 from game2.choices import save_choice, determine_next_chapter
 from game2.dialogue import display_dialogue, get_choice
 from game2.save import save_progress
 from settings import apply_settings
 
-# Initialize Pygame
-pygame.init()
-screen, settings = apply_settings()
-pygame.display.set_caption('Game2 - Chapter 1')
+CHOICES_FILE = "choices.json"
 
-# Display intro dialogue
-display_dialogue(screen, "Unknown", "A Job well done, young one. Go home now... you need to rest. I'll contact you when I got something.")
-time.sleep(5)
-display_dialogue(screen, "...", "...*sigh*, I should get home and rest up")
-time.sleep(5)
-display_dialogue(screen, "System", "*you notice something in the corner of your eye, something on the ground.*")
-time.sleep(5)
-display_dialogue(screen, "...", "What's this...? A phone of sorts...?")
-time.sleep(5)
-display_dialogue(screen, "System", "You look at the phone a little closer. What do you do?",
+# Clears choices.json when starting from Chapter 1
+def reset_choices():
+    empty_data = {"good": 0, "bad": 0}
+    with open(CHOICES_FILE, "w") as file:
+        json.dump(empty_data, file, indent=4)
+
+# Runs Chapter 1 inside the Game2 window
+def run_chapter(screen):
+    settings = apply_settings()[1] # Get settings
+    pygame.display.set_caption('Game2 - Chapter 1')
+
+    # Check if we are starting fresh
+    if os.path.basename(__file__) == "chapter1.py":
+        reset_choices()
+    # Display intro dialogue
+    display_dialogue(screen, "Unknown", "A Job well done, young one.\nGo home now... you need to rest.\nI'll contact you when I got something.")
+    display_dialogue(screen, "...", "...*sigh*, I should get home and rest up")
+    display_dialogue(screen, "System", "*you notice something in the corner of your eye,\nsomething on the ground.*")
+    display_dialogue(screen, "...", "What's this...?\nA phone of sorts...?")
+    display_dialogue(screen, "System", "You look at the phone and think...\nWhat do you do?",
                  ["Pick Up the Phone", "Leave it where it is"])
+    # Get player's choice
+    choice = get_choice()
 
-# Get player's choice
-choice = get_choice()
+    if choice == 0:
+        save_choice("good")
+        display_dialogue(screen, "System", "You picked up the phone.")
+        display_dialogue(screen, "...", "The phone looks good,\nsurprised it's not damaged or broken.")
+        display_dialogue(screen, "...", "I'll take it back home,\nsee what I can learn about it.")
 
-if choice == 0:
-    save_choice("good")
-    display_dialogue(screen, "System", "You picked up the phone.")
-    time.sleep(5)
-    display_dialogue(screen, "...", "The phone looks good, surprised it's not broken.")
-    time.sleep(5)
-    display_dialogue(screen, "...", "I'll take it back home and see what I can learn about it.")
-    time.sleep(5)
+    elif choice == 1:
+        save_choice("bad")
+        display_dialogue(screen, "System", "You left the phone where it was.")
+        display_dialogue(screen, "...", "No, doesn't matter,\nit's probably not important anyway.")
 
-elif choice == 1:
-    save_choice("bad")
-    display_dialogue(screen, "System", "You left the phone where it was.")
-    time.sleep(5)
-    display_dialogue(screen, "...", "Eh, whatever, probably not important anyway.")
-    time.sleep(5)
+    # Determine next chapter dynamically
+    next_chapter = determine_next_chapter()
+    display_dialogue(screen, "System", f"Loading next chapter...")
+    time.sleep(3)
 
-# Determine next chapter dynamically
-next_chapter = determine_next_chapter()
-display_dialogue(screen, "System", f"Loading next chapter...")
-time.sleep(5)
+    print("Chapter 1 completed! Saving progress...")
+    save_progress(f"{next_chapter}") # Save progress before moving on
 
-print("Chapter 1 completed! Saving progress...")
-save_progress(f"{next_chapter}") # Save progress before moving on
-
-# Load the next chapter
-pygame.quit()
-subprocess.run(["python", f"game2/chapters/{next_chapter}"])
+    # Load the next chapter
+    return next_chapter # Return the next chapter so Game2 can load it

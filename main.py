@@ -1,17 +1,24 @@
 import pygame
 import sys
 import subprocess
-from settings import settings_menu
+from settings import settings_menu, load_settings
 from utils import draw_text
 
 # Initialize PyGame
 pygame.init()
 
-# Default resolution (can be changed in settings)
-# Function to create the game window
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Main Menu")
+# Load settings
+settings = load_settings()
+
+# Apply settings
+WIDTH, HEIGHT = settings["resolution"]
+FLAGS = pygame.FULLSCREEN if settings.get("fullscreen", False) else 0
+
+# Initialize screen with loaded settings
+screen = pygame.display.set_mode((WIDTH, HEIGHT), FLAGS)
+
+# Gives the created window a name
+pygame.display.set_caption("Launcher")
 
 # Font
 font = pygame.font.Font(None, 40) # Default font, size 40
