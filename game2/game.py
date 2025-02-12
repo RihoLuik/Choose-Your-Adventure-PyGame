@@ -1,11 +1,12 @@
 import pygame
-import sys
 import importlib
 import json
+from game2.chapters.chapter1 import reset_choices
 from settings import settings_menu
 from credits import show_credits
 from utils import draw_text
 from game2.chapters import chapter1
+from game2.choices import determine_next_chapter
 
 SAVE_FILE = "game2/save.json" # Adjust if necessary
 
@@ -31,15 +32,20 @@ def load_saved_progress():
     except (FileNotFoundError, json.JSONDecodeError):
         return "chapter1" # Default if no save file is found
 
-# Starts Chapter 1 inside the same window
+# Starts a new game
 def start_game():
-    next_chapter = chapter1.run_chapter(screen) # Runs Chapter 1
+    reset_choices()  # Reset choices when starting a new game
+    next_chapter = chapter1.run_chapter(screen)  # Runs Chapter 1
     load_chapter(next_chapter)
 
-# Dynamically load and run the next chapter
+# Loads the next chapter based on choices
 def load_chapter(chapter_name):
-    chapter_module = importlib.import_module(f"game2.chapters.{chapter_name}")
-    chapter_module.run_chapter(screen)
+    next_chapter = determine_next_chapter() # Get the next chapter dynamically
+    try:
+        chapter_module = importlib.import_module(f"game2.chapters.{chapter_name}")
+        chapter_module.run_chapter(screen)
+    except ModuleNotFoundError:
+        print(f"Error: Chapter file {chapter_name}.py not found!")
 
 # Save progress to save.json
 def save_progress(chapter_name):
@@ -68,7 +74,7 @@ while running:
                 saved_chapter = load_saved_progress()
                 load_chapter(saved_chapter)
             elif event.key == pygame.K_2:
-                start_game() # Starts a new game (Chapter 1
+                start_game() # Starts a new game (Chapter 1)
             elif event.key == pygame.K_3:
                 settings_menu(screen) # Calls settings menu
             elif event.key == pygame.K_4:
