@@ -10,4 +10,4 @@ def run_chapter(screen):
     pygame.display.flip()
 
     time.sleep(3)
-    pygame.quit
+    pygame.quit()
